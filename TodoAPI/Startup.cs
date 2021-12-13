@@ -13,6 +13,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using TodoAPI.Models;
+using TodoAPI.Services;
 
 namespace TodoAPI
 {
@@ -32,6 +33,8 @@ namespace TodoAPI
             services.AddControllers()
                 .AddNewtonsoftJson();
             services.AddDbContext<TodoContext>(options => options.UseSqlServer(Configuration.GetConnectionString("TodoDatabase")));
+            services.AddScoped<TodoListService>();
+        
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -47,6 +50,8 @@ namespace TodoAPI
             app.UseRouting();
 
             app.UseAuthorization();
+
+            app.UseStaticFiles();
 
             app.UseEndpoints(endpoints =>
             {

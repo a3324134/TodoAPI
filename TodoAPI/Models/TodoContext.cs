@@ -100,6 +100,13 @@ namespace TodoAPI.Models
                     .HasColumnType("datetime")
                     .HasDefaultValueSql("(getdate())");
 
+                entity.Property(e => e.StartTime)
+                    .HasColumnType("date");
+
+                entity.Property(e => e.EndTime)
+                    .HasColumnType("date");
+
+
                 entity.HasOne(d => d.InsertEmployee)
                     .WithMany(p => p.TodoListInsertEmployees)
                     .HasForeignKey(d => d.InsertEmployeeId)

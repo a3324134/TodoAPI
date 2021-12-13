@@ -12,7 +12,6 @@ namespace TodoAPI.Models
         public string Name { get; set; }
         public string Src { get; set; }
         public Guid TodoId { get; set; }
-        [JsonIgnore]
         public virtual TodoList Todo { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 #nullable disable
@@ -20,9 +21,11 @@ namespace TodoAPI.Models
         public int Orders { get; set; }
         public Guid InsertEmployeeId { get; set; }
         public Guid UpdateEmployeeId { get; set; }
-
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
         public virtual Employee InsertEmployee { get; set; }
         public virtual Employee UpdateEmployee { get; set; }
+        [JsonIgnore]
         public virtual ICollection<UploadFile> UploadFiles { get; set; }
     }
 }
