@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -15,18 +14,16 @@ using TodoAPI.Parameters;
 
 namespace TodoAPI.Services
 {
-    public class TodoListService
+    public class TodoListAsyncService
     {
         private readonly IWebHostEnvironment _env;
         private readonly TodoContext _todoContext;
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        public TodoListService(TodoContext todoContext, IWebHostEnvironment env, IHttpContextAccessor httpContextAccessor)
+        public TodoListAsyncService(TodoContext todoContext, IWebHostEnvironment env)
         {
             _env = env;
             _todoContext = todoContext;
-            _httpContextAccessor = httpContextAccessor;
         }
-        public List<TodoListDto> GetData(TodoSelectParameter value)
+        public async Task<List<TodoListDto>> GetData(TodoSelectParameter value)
         {
             var result = _todoContext.TodoLists
                 .Include(a => a.UpdateEmployee)
@@ -46,7 +43,8 @@ namespace TodoAPI.Services
             if (value.minOrder != null && value.maxOrder != null)
                 result = result.Where(a => a.Orders >= value.minOrder && a.Orders <= value.maxOrder);
 
-            return result.ToList().Select(a => ItemToDto(a)).ToList();
+            var temp = await result.ToListAsync();
+            return temp.Select(a => ItemToDto(a)).ToList();
         }
 
         public TodoListDto GetDataByTodoId(Guid TodoId)
@@ -77,44 +75,40 @@ namespace TodoAPI.Services
 
         }
 
-        public TodoList InsertData(TodoListPostDto value)
+        public async Task<TodoList> InsertData(TodoListPostDto value)
         {
-            var claim = _httpContextAccessor.HttpContext.User.Claims.ToList();
-            var employeeId = claim.Where(a => a.Type == "EmployeeId").First().Value;
             TodoList insert = new TodoList
             {
                 InsertTime = DateTime.Now,
                 UpdateTime = DateTime.Now,
-                InsertEmployeeId = Guid.Parse(employeeId),
-                UpdateEmployeeId = Guid.Parse(employeeId),
+                InsertEmployeeId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                UpdateEmployeeId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
             };
 
-            _todoContext.TodoLists.Add(insert).CurrentValues.SetValues(value);
-            _todoContext.SaveChanges();
 
             foreach (var file in value.UploadFiles)
             {
-                _todoContext.UploadFiles.Add(new UploadFile()
+                insert.UploadFiles.Add(new UploadFile()
                 {
-                    TodoId = insert.TodoId
-                }).CurrentValues.SetValues(file);
+                    Src = file.Src,
+                    Name = file.Name
+                });
             }
 
-            _todoContext.SaveChanges();
+            _todoContext.TodoLists.Add(insert).CurrentValues.SetValues(value);
+            await _todoContext.SaveChangesAsync();
 
             return insert;
         }
 
         public TodoList InsertDataWithUpload(TodoListPostUpDto value)
         {
-            var claim = _httpContextAccessor.HttpContext.User.Claims.ToList();
-            var employeeId = claim.Where(a => a.Type == "EmployeeId").First().Value;
             TodoList insert = new TodoList
             {
                 InsertTime = DateTime.Now,
                 UpdateTime = DateTime.Now,
-                InsertEmployeeId = Guid.Parse(employeeId),
-                UpdateEmployeeId = Guid.Parse(employeeId),
+                InsertEmployeeId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                UpdateEmployeeId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
             };
 
             _todoContext.TodoLists.Add(insert).CurrentValues.SetValues(value.TodoList);

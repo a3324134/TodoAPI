@@ -22,6 +22,7 @@ namespace TodoAPI.Models
         public virtual DbSet<JobTitle> JobTitles { get; set; }
         public virtual DbSet<TodoList> TodoLists { get; set; }
         public virtual DbSet<UploadFile> UploadFiles { get; set; }
+        public virtual DbSet<Role> Roles { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -135,6 +136,19 @@ namespace TodoAPI.Models
                     .HasForeignKey(d => d.TodoId)
                     //.OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_File_ToTable");
+            });
+
+            modelBuilder.Entity<Role>(entity =>
+            {
+                entity.ToTable("Role");
+
+                entity.Property(e => e.RoleId).HasDefaultValueSql("(newid())");
+
+                entity.Property(e => e.EmployeeId).HasDefaultValueSql("(newid())");
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(50);
             });
 
             OnModelCreatingPartial(modelBuilder);

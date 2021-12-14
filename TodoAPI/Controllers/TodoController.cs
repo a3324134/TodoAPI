@@ -14,6 +14,7 @@ using TodoAPI.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
+using Microsoft.AspNetCore.Authorization;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -36,6 +37,7 @@ namespace TodoAPI.Controllers
         
         // GET: api/<TodoController>
         [HttpGet]
+        [Authorize(Roles = "select")]
         public IActionResult Get([FromQuery]TodoSelectParameter value)
         {
             var result = _todoListService.GetData(value);
@@ -48,6 +50,7 @@ namespace TodoAPI.Controllers
 
         // GET api/<TodoController>/5
         [HttpGet("{id}")]
+        [Authorize(Roles = "select")]
         public ActionResult<TodoListDto> GetOne(Guid id)
         {
             var result = _todoListService.GetDataByTodoId(id);
@@ -60,6 +63,7 @@ namespace TodoAPI.Controllers
 
         // POST api/<TodoController>
         [HttpPost]
+        [Authorize(Roles = "insert")]
         public IActionResult Post([FromBody] TodoListPostDto value)
         {
             var insert = _todoListService.InsertData(value);
