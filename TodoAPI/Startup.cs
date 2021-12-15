@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -10,9 +11,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using TodoAPI.Models;
@@ -40,14 +43,33 @@ namespace TodoAPI
             services.AddScoped<TodoListAsyncService>();
             services.AddHttpContextAccessor();
 
-            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(option =>
-            {
-                //未登入時會自動導到這個網址
-                option.LoginPath = new PathString("/api/Login/NoLogin");
-                //沒有權限會自動導到這個網址
-                option.AccessDeniedPath = new PathString("/api/Login/NoAccess");
-                option.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+            #region cookie auth
+            //services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(option =>
+            //{
+            //    //未登入時會自動導到這個網址
+            //    option.LoginPath = new PathString("/api/Login/NoLogin");
+            //    //沒有權限會自動導到這個網址
+            //    option.AccessDeniedPath = new PathString("/api/Login/NoAccess");
+            //    option.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+            //});
+            #endregion
+
+            #region Jwt auth
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidIssuer = Configuration["JWT:Issuer"],
+                        ValidateAudience = true,
+                        ValidAudience = Configuration["JWT:Audience"],
+                        ValidateLifetime = true,
+                        ClockSkew = TimeSpan.Zero,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWT:KEY"]))
+                };
             });
+            #endregion
 
             //全部API皆需驗證
             services.AddMvc(options =>
